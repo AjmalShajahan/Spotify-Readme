@@ -8,7 +8,7 @@ from random import randint
 # Load environment variables
 load_dotenv(find_dotenv())
 
-# Define base-64 encoded images
+# Define Base64 encoded images
 with open("api/base64/placeholder_scan_code.txt") as f:
     B64_PLACEHOLDER_SCAN_CODE = f.read()
 with open("api/base64/placeholder_image.txt") as f:
@@ -81,7 +81,7 @@ def generate_bars(bar_count, rainbow):
 
 
 def load_image_base64(url):
-    """Get the base-64 encoded image from url"""
+    """Get the Base64 encoded image from url"""
     resposne = requests.get(url)
     return b64encode(resposne.content).decode("ascii")
 
@@ -114,12 +114,15 @@ def make_svg(spin, scan, theme, rainbow):
         bar_count = 12
         scan_code = None
 
+    print(scan, type(scan))
+    print(scan_code, type(scan_code))
+
     return render_template(
         "index.html",
         **{
             "bars": generate_bars(bar_count, rainbow),
-            "artist": item["artists"][0]["name"].replace("&", "&amp;"),
-            "song": item["name"].replace("&", "&amp;"),
+            "artist": item["artists"][0]["name"],
+            "song": item["name"],
             "image": image,
             "scan_code": scan_code if scan_code != "" else B64_PLACEHOLDER_SCAN_CODE,
             "theme": theme,
