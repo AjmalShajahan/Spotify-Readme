@@ -1,8 +1,14 @@
- {
+{
   "redirects": [
     {
       "source": "/",
       "destination": "https://github.com/AjmalShajahan/Spotify-Readme"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "api/index.py"
     }
   ]
 }
