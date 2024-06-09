@@ -1,0 +1,38 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		"config:recommended",
+		":approveMajorUpdates",
+		":assignAndReview(AjmalShajahan)"
+	],
+	"branchPrefix": "renovate-",
+	"baseBranches": [
+		"test"
+	],
+	"assigneesFromCodeOwners": true,
+	"packageRules": [
+		{
+			"matchUpdateTypes": [
+				"minor",
+				"patch"
+			],
+			"groupName": "all non-major dependencies",
+			"groupSlug": "all-minor-patch",
+			"automerge": true,
+			"automergeType": "branch",
+			"platformAutomerge": true,
+			"labels": [
+				"dependencies"
+			]
+		},
+		{
+			"matchUpdateTypes": [
+				"major"
+			],
+			"labels": [
+				"dependencies",
+				"breaking"
+			]
+		}
+	]
+}
