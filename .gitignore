@@ -30,3 +30,5 @@ build/
 *.egg-info/
 
 previews
+.vercel
+.env*.local
