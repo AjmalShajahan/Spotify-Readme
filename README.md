@@ -49,7 +49,7 @@
 This will take approximately 5 minutes.
 
 > [!NOTE]
-> This guide was last updated on Aug 30, 2023. The steps might differ slightly in the future if Spotify or Vercel updates their website interfaces.
+> This guide was last updated on Jun 12, 2026. The steps might differ slightly in the future if Spotify or Vercel updates their website interfaces.
 
 #### 0. Star This Repo (Mandatory) 🌟
 
@@ -58,6 +58,7 @@ This will take approximately 5 minutes.
 #### 1. Spotify's API 🎶
 
 * Head over to <a href="https://developer.spotify.com/dashboard/">Spotify for Developers</a>.
+  * For Spotify Development Mode apps, the app owner now needs an active Spotify Premium subscription. New Development Mode apps are also limited to 1 Client ID per developer and 5 users per app.
   * Accept the Terms of Service if necessary.
   * Verify your email address if you haven't done so already.
   * Click on the **Create app** button.
