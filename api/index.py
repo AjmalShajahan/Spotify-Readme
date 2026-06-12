@@ -34,13 +34,38 @@ def get_token():
         raise Exception(r.json())
 
 
+def parse_json_response(response):
+    """Return JSON response data, or an empty dict for empty/non-JSON bodies."""
+    if response.status_code == 204 or not response.content:
+        return {}
+    try:
+        return response.json()
+    except requests.exceptions.JSONDecodeError:
+        return {}
+
+
 def spotify_request(endpoint):
     """Make a request to the specified endpoint"""
     r = requests.get(
         f"https://api.spotify.com/v1/{endpoint}",
         headers={"Authorization": f"Bearer {get_token()}"},
     )
-    return {} if r.status_code == 204 else r.json()
+    if not r.ok:
+        raise Exception(f"Spotify API request failed ({r.status_code}): {r.text}")
+    return parse_json_response(r)
+
+
+def get_playback_track():
+    """Get the current track, falling back to the most recently played track."""
+    data = spotify_request("me/player/currently-playing")
+    if data and data.get("item"):
+        return data["item"]
+
+    recent = spotify_request("me/player/recently-played?limit=1")
+    items = recent.get("items", [])
+    if not items:
+        return None
+    return items[0].get("track")
 
 
 def generate_bars(bar_count, rainbow):
@@ -95,12 +120,22 @@ def get_scan_code(spotify_uri):
 
 def make_svg(spin, scan, theme, rainbow):
     """Render the HTML template with variables"""
-    data = spotify_request("me/player/currently-playing")
-    if data:
-        item = data["item"]
-    else:
-        item = spotify_request(
-            "me/player/recently-played?limit=1")["items"][0]["track"]
+    item = get_playback_track()
+
+    if not item:
+        return render_template(
+            "index.html",
+            **{
+                "bars": generate_bars(12, rainbow),
+                "artist": "Spotify",
+                "song": "Not Playing",
+                "image": B64_PLACEHOLDER_IMAGE,
+                "scan_code": None,
+                "theme": theme,
+                "spin": spin,
+                "logo": B64_SPOTIFY_LOGO,
+            },
+        )
 
     if item["album"]["images"] == []:
         image = B64_PLACEHOLDER_IMAGE
@@ -113,9 +148,6 @@ def make_svg(spin, scan, theme, rainbow):
     else:
         bar_count = 12
         scan_code = None
-
-    print(scan, type(scan))
-    print(scan_code, type(scan_code))
 
     return render_template(
         "index.html",
@@ -152,13 +184,10 @@ def catch_all(path):
 
 @app.route("/api/play")
 def play():
-    data = spotify_request("me/player/currently-playing")
-    if data:
-        id = data["item"]["id"]
-    else:
-        id = spotify_request(
-            "me/player/recently-played?limit=1")["items"][0]["track"]["id"]
-    return redirect(f"https://open.spotify.com/track/{id}")
+    item = get_playback_track()
+    if not item:
+        return redirect("https://open.spotify.com/")
+    return redirect(f"https://open.spotify.com/track/{item['id']}")
 
 if __name__ == "__main__":
     app.run(debug=True)
