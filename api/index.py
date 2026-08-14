@@ -18,6 +18,41 @@ with open("api/base64/placeholder_image.txt") as f:
 with open("api/base64/spotify_logo.txt") as f:
     B64_SPOTIFY_LOGO = f.read()
 
+CATPPUCCIN_THEMES = {
+    "catppuccin-latte": {
+        "background": "#eff1f5",
+        "shadow": "#dce0e8",
+        "text": "#4c4f69",
+        "subtext": "#6c6f85",
+        "bar": "#40a02b",
+        "dark": False,
+    },
+    "catppuccin-frappe": {
+        "background": "#303446",
+        "shadow": "#292c3c",
+        "text": "#c6d0f5",
+        "subtext": "#a5adce",
+        "bar": "#a6d189",
+        "dark": True,
+    },
+    "catppuccin-macchiato": {
+        "background": "#24273a",
+        "shadow": "#1e2030",
+        "text": "#cad3f5",
+        "subtext": "#a5adcb",
+        "bar": "#a6da95",
+        "dark": True,
+    },
+    "catppuccin-mocha": {
+        "background": "#1e1e2e",
+        "shadow": "#181825",
+        "text": "#cdd6f4",
+        "subtext": "#a6adc8",
+        "bar": "#a6e3a1",
+        "dark": True,
+    },
+}
+
 
 def get_token():
     """Get a new access token"""
@@ -80,7 +115,7 @@ def get_playback_track():
     return items[0].get("track")
 
 
-def generate_bars(bar_count, rainbow):
+def generate_bars(bar_count, rainbow, color="#24D255"):
     """Build the HTML/CSS snippets for the EQ bars to be injected"""
     bars = "".join(["<div class='bar'></div>" for _ in range(bar_count)])
     css = "<style>"
@@ -112,7 +147,7 @@ def generate_bars(bar_count, rainbow):
     for i in range(bar_count):
         css += f""".bar:nth-child({i + 1}) {{
                 animation-duration: {randint(500, 750)}ms;
-                background: {spectrum[i] if rainbow and rainbow != 'false' and rainbow != '0' else '#24D255'};
+                background: {spectrum[i] if rainbow and rainbow != 'false' and rainbow != '0' else color};
             }}"""
     return f"{bars}{css}</style>"
 
@@ -134,17 +169,22 @@ def get_scan_code(spotify_uri):
 def make_svg(spin, scan, theme, rainbow):
     """Render the HTML template with variables"""
     item = get_playback_track()
+    palette = CATPPUCCIN_THEMES.get(
+        "catppuccin-mocha" if theme == "catppuccin" else theme
+    )
+    bar_color = palette["bar"] if palette else "#24D255"
 
     if not item:
         return render_template(
             "index.html",
             **{
-                "bars": generate_bars(12, rainbow),
+                "bars": generate_bars(12, rainbow, bar_color),
                 "artist": "Spotify",
                 "song": "Not Playing",
                 "image": B64_PLACEHOLDER_IMAGE,
                 "scan_code": None,
                 "theme": theme,
+                "palette": palette,
                 "spin": spin,
                 "logo": B64_SPOTIFY_LOGO,
             },
@@ -167,12 +207,13 @@ def make_svg(spin, scan, theme, rainbow):
     return render_template(
         "index.html",
         **{
-            "bars": generate_bars(bar_count, rainbow),
+            "bars": generate_bars(bar_count, rainbow, bar_color),
             "artist": item["artists"][0]["name"],
             "song": item["name"],
             "image": image,
             "scan_code": scan_code if scan_code != "" else B64_PLACEHOLDER_SCAN_CODE,
             "theme": theme,
+            "palette": palette,
             "spin": spin,
             "logo": B64_SPOTIFY_LOGO,
         },
