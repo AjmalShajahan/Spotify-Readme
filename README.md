@@ -9,7 +9,7 @@
 </div>
 
 <p align="center">
-  A dynamic, customizable, and real-time Spotify now-playing widget for your README files that syncs with the song you’re currently playing. If you're not currently playing a song, it'll display one of your recent songs! Feel free to ask for help or make any PRs/issues/suggestions 😄
+  A customizable, real-time Spotify now-playing SVG widget for GitHub profiles, Markdown, and the web. Designed primarily for GitHub READMEs, it can also be embedded on websites and other platforms that support remote SVG images.
 </p>
 
 <p align="center">
