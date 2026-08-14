@@ -5,7 +5,6 @@
     ":separateMultipleMajorReleases",
     ":approveMajorUpdates"
   ],
-  "baseBranchPatterns": ["dev"],
   "dependencyDashboardLabels": ["dependencies"],
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "vulnerabilityAlerts": {
