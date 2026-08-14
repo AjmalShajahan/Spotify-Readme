@@ -2,14 +2,18 @@
   <img src="assets/spotify.svg" width="100" align="center">
   <h1>Spotify Readme</h1>
 
-  [![Badge](https://img.shields.io/github/issues/tthn0/Spotify-Readme?style=for-the-badge)](https://github.com/tthn0/Spotify-Readme/issues)
-  [![Badge](https://img.shields.io/github/forks/tthn0/Spotify-Readme?style=for-the-badge)](https://github.com/tthn0/Spotify-Readme/network)
-  [![Badge](https://img.shields.io/github/stars/tthn0/Spotify-Readme?style=for-the-badge)](https://github.com/tthn0/Spotify-Readme/stargazers)
+  [![Issues](https://img.shields.io/github/issues/AjmalShajahan/Spotify-Readme?style=for-the-badge)](https://github.com/AjmalShajahan/Spotify-Readme/issues)
+  [![Forks](https://img.shields.io/github/forks/AjmalShajahan/Spotify-Readme?style=for-the-badge)](https://github.com/AjmalShajahan/Spotify-Readme/network/members)
+  [![Stars](https://img.shields.io/github/stars/AjmalShajahan/Spotify-Readme?style=for-the-badge)](https://github.com/AjmalShajahan/Spotify-Readme/stargazers)
 
 </div>
 
 <p align="center">
   A dynamic, customizable, and real-time Spotify now-playing widget for your README files that syncs with the song you’re currently playing. If you're not currently playing a song, it'll display one of your recent songs! Feel free to ask for help or make any PRs/issues/suggestions 😄
+</p>
+
+<p align="center">
+  Maintained by <a href="https://github.com/AjmalShajahan">Ajmal Shajahan</a> · Forked from <a href="https://github.com/tthn0/Spotify-Readme">tthn0/Spotify-Readme</a>
 </p>
 
 ## Previews
@@ -18,31 +22,31 @@
 ```
 /api
 ```
-![Preview](https://tthn0.vercel.app/api)
+![Preview](https://ajmal-spotify-readme.vercel.app/api)
 
 #### Spinning CD Effect
 ```
 /api?spin=true
 ```
-![Preview](https://tthn0.vercel.app/api?spin=true)
+![Preview](https://ajmal-spotify-readme.vercel.app/api?spin=true)
 
 #### Include Scan Code
 ```
 /api?scan=true
 ```
-![Preview](https://tthn0.vercel.app/api?scan=true)
+![Preview](https://ajmal-spotify-readme.vercel.app/api?scan=true)
 
 #### Rainbow Equalizer
 ```
 /api?rainbow=true
 ```
-![Preview](https://tthn0.vercel.app/api?rainbow=true)
+![Preview](https://ajmal-spotify-readme.vercel.app/api?rainbow=true)
 
 #### Dark Theme
 ```
 /api?theme=dark
 ```
-![Preview](https://tthn0.vercel.app/api?theme=dark)
+![Preview](https://ajmal-spotify-readme.vercel.app/api?theme=dark)
 
 ## Setup/Deployment
 
@@ -130,15 +134,15 @@ https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&
     <img src="https://{PROJECT_NAME}.vercel.app/api" alt="Current Spotify Song">
   </a>
 
-  <a href="https://github.com/tthn0/Spotify-Readme">Source Repo</a>
+  <a href="https://github.com/tthn0/Spotify-Readme">Original Source</a>
   ```
 
-* Please leave the anchor tag hyperlink reference to this GitHub repo to retain creator credit and for other users to find!
+* Please keep the original source link to credit the project creator and help other users find it.
 
 ## Customization
 
 <p>
-  To customize the widget, add query parameters to the endpoint. There are many possible combinations! See how it pairs with other widgets on <a href="https://github.com/tthn0/tthn0">my own README</a>! (If you're on mobile and have a small screen, use a desktop browser or change the zoom level to zoom out.)
+  To customize the widget, add query parameters to the endpoint. There are many possible combinations! See the original author's <a href="https://github.com/tthn0/tthn0">profile README</a> for an example alongside other widgets. If you're on mobile and have a small screen, use a desktop browser or zoom out.
 </p>
 
 | Parameter | Default | Values          |
@@ -154,4 +158,4 @@ You can keep your fork, and thus your private Vercel instance up to date with th
 
 ## Note
 
-This wasn't a completely original idea. This was inspired by <a href="https://github.com/novatorem/novatorem">novatorem's project</a> that was supposed to be for me only. Since others have asked for the source code, I decided to make this a public repo. I also incorporated the latest two PR's from the orignal project into this one and made it easy to customize!
+This repository is a maintained fork of <a href="https://github.com/tthn0/Spotify-Readme">tthn0/Spotify-Readme</a>. The original project was inspired by <a href="https://github.com/novatorem/novatorem">novatorem</a>. Thanks to both projects and their contributors for making this work possible.
