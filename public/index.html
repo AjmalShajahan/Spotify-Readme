@@ -238,6 +238,22 @@
         margin-bottom: 2rem;
       }
 
+      .reset-button {
+        min-height: 2.75rem;
+        padding: 0.6rem 0.9rem;
+        border: 1px solid #45475a;
+        border-radius: 999px;
+        background: #1e1e2e;
+        color: #cdd6f4;
+        cursor: pointer;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .reset-button:hover {
+        border-color: #89b4fa;
+      }
+
       h2 {
         margin: 0;
         font-size: clamp(1.5rem, 4vw, 2.2rem);
@@ -489,9 +505,9 @@
     </style>
   </head>
   <body>
-    <a class="skip-link" href="#configurator">Skip to configurator</a>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <main>
+    <main id="main-content" tabindex="-1">
       <section class="hero" aria-labelledby="page-title">
         <div>
           <p class="eyebrow">Spotify README</p>
@@ -539,6 +555,7 @@
             <h2 id="configurator-title">Build Your Embed</h2>
             <p class="muted">Choose a look, preview it live, then copy the Markdown.</p>
           </div>
+          <button class="reset-button" id="reset" type="button">Reset Defaults</button>
         </div>
 
         <div class="builder-grid">
@@ -591,39 +608,40 @@
 
         <dl class="option-list">
           <div class="option">
-            <dt>theme</dt>
+            <dt translate="no">theme</dt>
             <dd>
-              Default: <code>light</code>. Choose <code>light</code>,
-              <code>dark</code>, or any of the four Catppuccin flavors shown
+              Default: <code translate="no">light</code>. Choose
+              <code translate="no">light</code>, <code translate="no">dark</code>,
+              or any of the four Catppuccin flavors shown
               in the builder.
             </dd>
           </div>
           <div class="option">
-            <dt>spin</dt>
+            <dt translate="no">spin</dt>
             <dd>
-              Default: <code>false</code>. Set to <code>true</code> to spin the
-              album art.
+              Default: <code translate="no">false</code>. Set to
+              <code translate="no">true</code> to spin the album art.
             </dd>
           </div>
           <div class="option">
-            <dt>scan</dt>
+            <dt translate="no">scan</dt>
             <dd>
-              Default: <code>false</code>. Set to <code>true</code> to show a
-              Spotify Code.
+              Default: <code translate="no">false</code>. Set to
+              <code translate="no">true</code> to show a Spotify Code.
             </dd>
           </div>
           <div class="option">
-            <dt>rainbow</dt>
+            <dt translate="no">rainbow</dt>
             <dd>
-              Default: <code>false</code>. Set to <code>true</code> for rainbow
-              equalizer bars.
+              Default: <code translate="no">false</code>. Set to
+              <code translate="no">true</code> for rainbow equalizer bars.
             </dd>
           </div>
         </dl>
 
         <p class="usage-note">
-          <code>theme=catppuccin</code> is shorthand for
-          <code>theme=catppuccin-mocha</code>. See the
+          <code translate="no">theme=catppuccin</code> is shorthand for
+          <code translate="no">theme=catppuccin-mocha</code>. See the
           <a href="https://github.com/AjmalShajahan/Spotify-Readme#setupdeployment"
           >complete setup and deployment guide</a>.
         </p>
@@ -648,6 +666,7 @@
       const markdown = document.querySelector("#markdown");
       const copyButton = document.querySelector("#copy");
       const copyStatus = document.querySelector("#copy-status");
+      const resetButton = document.querySelector("#reset");
       const allowedThemes = new Set([
         "light",
         "dark",
@@ -698,6 +717,13 @@
       }
 
       controls.addEventListener("change", () => {
+        copyStatus.textContent = "";
+        renderConfiguration();
+      });
+
+      resetButton.addEventListener("click", () => {
+        controls.reset();
+        theme.value = "light";
         copyStatus.textContent = "";
         renderConfiguration();
       });
