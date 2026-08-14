@@ -4,8 +4,13 @@ from dotenv import find_dotenv, load_dotenv
 from flask import Flask, Response, render_template, request, redirect
 from os import getenv
 from random import randint
+from time import monotonic
 
 REQUEST_TIMEOUT = (3.05, 10)
+TOKEN_EXPIRY_BUFFER_SECONDS = 30
+
+_access_token = None
+_access_token_expires_at = 0.0
 
 # Load environment variables
 load_dotenv(find_dotenv())
@@ -53,31 +58,66 @@ CATPPUCCIN_THEMES = {
     },
 }
 
+SUPPORTED_THEMES = {"light", "dark", *CATPPUCCIN_THEMES}
+
+
+class SpotifyAPIError(RuntimeError):
+    """Raised when Spotify cannot provide a usable response."""
+
+
+def parse_boolean(value):
+    """Treat documented truthy values as enabled and everything else as disabled."""
+    return str(value).lower() in {"1", "true"}
+
+
+def normalize_theme(theme):
+    """Return a supported canonical theme, falling back to light."""
+    if theme == "catppuccin":
+        return "catppuccin-mocha"
+    return theme if theme in SUPPORTED_THEMES else "light"
+
 
 def get_token():
     """Get a new access token"""
+    global _access_token, _access_token_expires_at
+
+    if _access_token and monotonic() < _access_token_expires_at:
+        return _access_token
+
     required_variables = ("REFRESH_TOKEN", "CLIENT_ID", "CLIENT_SECRET")
     missing_variables = [name for name in required_variables if not getenv(name)]
     if missing_variables:
-        raise RuntimeError(
+        raise SpotifyAPIError(
             f"Missing required environment variables: {', '.join(missing_variables)}"
         )
 
-    r = requests.post(
-        "https://accounts.spotify.com/api/token",
-        data={
-            "grant_type": "refresh_token",
-            "refresh_token": getenv("REFRESH_TOKEN"),
-            "client_id": getenv("CLIENT_ID"),
-            "client_secret": getenv("CLIENT_SECRET"),
-        },
-        timeout=REQUEST_TIMEOUT,
-    )
-    r.raise_for_status()
     try:
-        return r.json()["access_token"]
-    except (KeyError, requests.exceptions.JSONDecodeError) as error:
-        raise RuntimeError("Spotify token response did not contain an access token") from error
+        response = requests.post(
+            "https://accounts.spotify.com/api/token",
+            data={
+                "grant_type": "refresh_token",
+                "refresh_token": getenv("REFRESH_TOKEN"),
+                "client_id": getenv("CLIENT_ID"),
+                "client_secret": getenv("CLIENT_SECRET"),
+            },
+            timeout=REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        _access_token = payload["access_token"]
+        lifetime = max(int(payload.get("expires_in", 3600)), 0)
+    except (
+        KeyError,
+        TypeError,
+        ValueError,
+        requests.exceptions.RequestException,
+    ) as error:
+        raise SpotifyAPIError("Unable to refresh the Spotify access token") from error
+
+    _access_token_expires_at = monotonic() + max(
+        lifetime - TOKEN_EXPIRY_BUFFER_SECONDS, 0
+    )
+    return _access_token
 
 
 def parse_json_response(response):
@@ -92,14 +132,16 @@ def parse_json_response(response):
 
 def spotify_request(endpoint):
     """Make a request to the specified endpoint"""
-    r = requests.get(
-        f"https://api.spotify.com/v1/{endpoint}",
-        headers={"Authorization": f"Bearer {get_token()}"},
-        timeout=REQUEST_TIMEOUT,
-    )
-    if not r.ok:
-        raise Exception(f"Spotify API request failed ({r.status_code}): {r.text}")
-    return parse_json_response(r)
+    try:
+        response = requests.get(
+            f"https://api.spotify.com/v1/{endpoint}",
+            headers={"Authorization": f"Bearer {get_token()}"},
+            timeout=REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+    except requests.exceptions.RequestException as error:
+        raise SpotifyAPIError("Spotify API request failed") from error
+    return parse_json_response(response)
 
 
 def get_playback_track():
@@ -168,10 +210,16 @@ def get_scan_code(spotify_uri):
 
 def make_svg(spin, scan, theme, rainbow):
     """Render the HTML template with variables"""
-    item = get_playback_track()
-    palette = CATPPUCCIN_THEMES.get(
-        "catppuccin-mocha" if theme == "catppuccin" else theme
-    )
+    theme = normalize_theme(theme)
+    try:
+        item = get_playback_track()
+    except SpotifyAPIError:
+        item = None
+        unavailable = True
+    else:
+        unavailable = False
+
+    palette = CATPPUCCIN_THEMES.get(theme)
     bar_color = palette["bar"] if palette else "#24D255"
 
     if not item:
@@ -180,7 +228,7 @@ def make_svg(spin, scan, theme, rainbow):
             **{
                 "bars": generate_bars(12, rainbow, bar_color),
                 "artist": "Spotify",
-                "song": "Not Playing",
+                "song": "Unavailable" if unavailable else "Not Playing",
                 "image": B64_PLACEHOLDER_IMAGE,
                 "scan_code": None,
                 "theme": theme,
@@ -195,11 +243,17 @@ def make_svg(spin, scan, theme, rainbow):
         image = B64_PLACEHOLDER_IMAGE
     else:
         image_index = 1 if len(album_images) > 1 else 0
-        image = load_image_base64(album_images[image_index]["url"])
+        try:
+            image = load_image_base64(album_images[image_index]["url"])
+        except requests.exceptions.RequestException:
+            image = B64_PLACEHOLDER_IMAGE
 
-    if scan and scan != "false" and scan != "0":
+    if scan:
         bar_count = 10
-        scan_code = get_scan_code(item["uri"])
+        try:
+            scan_code = get_scan_code(item["uri"])
+        except requests.exceptions.RequestException:
+            scan_code = B64_PLACEHOLDER_SCAN_CODE
     else:
         bar_count = 12
         scan_code = None
@@ -228,10 +282,10 @@ app = Flask(__name__)
 def catch_all(path):
     resp = Response(
         make_svg(
-            request.args.get("spin"),
-            request.args.get("scan"),
+            parse_boolean(request.args.get("spin")),
+            parse_boolean(request.args.get("scan")),
             request.args.get("theme"),
-            request.args.get("rainbow"),
+            parse_boolean(request.args.get("rainbow")),
         ),
         mimetype="image/svg+xml",
     )
@@ -245,7 +299,10 @@ def catch_all(path):
 @app.route("/play")
 @app.route("/api/play")
 def play():
-    item = get_playback_track()
+    try:
+        item = get_playback_track()
+    except SpotifyAPIError:
+        item = None
     if not item:
         response = redirect("https://open.spotify.com/")
     else:
