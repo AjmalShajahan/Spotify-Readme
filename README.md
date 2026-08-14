@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  Maintained by <a href="https://github.com/AjmalShajahan">Ajmal Shajahan</a> · Forked from <a href="https://github.com/tthn0/Spotify-Readme">tthn0/Spotify-Readme</a>
+  Maintained by <a href="https://github.com/AjmalShajahan">Ajmal Shajahan</a> · Forked from <a href="https://github.com/tthn0/Spotify-Readme">tthn0/Spotify-Readme</a> · Inspired by <a href="https://github.com/novatorem/novatorem">novatorem</a>
 </p>
 
 ## Previews
@@ -50,15 +50,6 @@
 
 ## Setup/Deployment
 
-This will take approximately 5 minutes.
-
-> [!NOTE]
-> This guide was last updated on Jun 12, 2026. The steps might differ slightly in the future if Spotify or Vercel updates their website interfaces.
-
-#### 0. Star This Repo (Mandatory) 🌟
-
-  * Yes, this step is required.
-
 #### 1. Spotify's API 🎶
 
 * Head over to <a href="https://developer.spotify.com/dashboard/">Spotify for Developers</a>.
@@ -72,39 +63,31 @@ This will take approximately 5 minutes.
   * Click on the **Settings** button.
   * Take note of the **Client ID** & **Client Secret**.
 
-#### 2. Intermediary Steps 🛠️
+#### 2. Get a Refresh Token 🛠️
 
 ```
-https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&scope=user-read-currently-playing,user-read-recently-played&redirect_uri=http://127.0.0.1:80/callback/
+https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&scope=user-read-currently-playing%20user-read-recently-played&redirect_uri=http://127.0.0.1:80/callback/
 ```
 
 * Copy and paste the above link into your browser.
   * Replace `{CLIENT_ID}` with the **Client ID** you got from your Spotify application.
-  * Vist the URL.
+  * Visit the URL.
     * Log in if you're not already signed in.
     * Click **Agree**.
-* After you get redirected to a blank page, retrieve the URL from your browser's URL bar. It should be in the following format: `http://127.0.0.1:80/callback/?code={CODE}`.
-  * Take note of the `{CODE}` portion of the URL.
-* Head over to <a href="https://base64.io">base64.io</a>.
-  * Create a string in the form of `{CLIENT_ID}:{CLIENT_SECRET}` and encode it to base 64.
-  * Take note of the encoded Base64 string. We'll call this `{BASE_64}`.
-* If you're on Windows or don't have the `curl` command, head over to <a href="https://httpie.io/cli/run">httpie.io/cli/run</a>.
-  * Press enter.
-  * Clear the pre-filled command.
-* If you're on Linux or Mac with the `curl` command, open up your preferred terminal.
-* Run the following command (replace `{BASE_64}` and `{CODE}` with their respective values):
+* After you get redirected to a blank page, copy the `code` value from the browser URL. It should look like `http://127.0.0.1:80/callback/?code={CODE}`.
+* In a local terminal, exchange the authorization code for tokens. Replace `{CLIENT_ID}` and `{CODE}`, then enter the Client Secret when `curl` prompts for a password. Never paste your Client Secret into a website, command, or Git commit.
 
   ```bash
-  curl \
-    -X POST \
-    -H "Content-Type: application/x-www-form-urlencoded" \
-    -H "Authorization: Basic {BASE_64}" \
-    -d "grant_type=authorization_code&redirect_uri=http://127.0.0.1:80/callback/&code={CODE}" \
-    https://accounts.spotify.com/api/token
+  curl --request POST \
+    --url https://accounts.spotify.com/api/token \
+    --user "{CLIENT_ID}" \
+    --header "Content-Type: application/x-www-form-urlencoded" \
+    --data-urlencode "grant_type=authorization_code" \
+    --data-urlencode "code={CODE}" \
+    --data-urlencode "redirect_uri=http://127.0.0.1:80/callback/"
   ```
 
-* If you did everything correctly, you should get a response in the form of a JSON object.
-  * Take note of the `refresh_token`'s value. We'll call this `{REFRESH_TOKEN}`.
+* The JSON response includes a `refresh_token`. Store it securely for the Vercel configuration step.
 
 #### 3. Host on Vercel 🌀
 
@@ -112,8 +95,8 @@ https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&
 * Head over to <a href="https://vercel.com">Vercel</a> and create an account if you don't already have one.
   * Add a new project.
     * Link your GitHub account if you haven't done so already.
-    * Make sure Vercel has access to the forked respository.
-    * Import the forked respository into your project.
+    * Make sure Vercel has access to the forked repository.
+    * Import the forked repository into your project.
       * Give it a meaningful project name.
       * Keep the default options for the other settings.
       * Add the following environment variables along with their appropriate values:
@@ -142,7 +125,7 @@ https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&
 ## Customization
 
 <p>
-  To customize the widget, add query parameters to the endpoint. There are many possible combinations! See the original author's <a href="https://github.com/tthn0/tthn0">profile README</a> for an example alongside other widgets. If you're on mobile and have a small screen, use a desktop browser or zoom out.
+  To customize the widget, add query parameters to the endpoint. There are many possible combinations. If you're on mobile and have a small screen, use a desktop browser or zoom out.
 </p>
 
 | Parameter | Default | Values          |
@@ -155,7 +138,3 @@ https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&
 ## Keep Your Fork Up To Date
 
 You can keep your fork, and thus your private Vercel instance up to date with the upstream using GitHub's <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork">Sync Fork button</a>.
-
-## Note
-
-This repository is a maintained fork of <a href="https://github.com/tthn0/Spotify-Readme">tthn0/Spotify-Readme</a>. The original project was inspired by <a href="https://github.com/novatorem/novatorem">novatorem</a>. Thanks to both projects and their contributors for making this work possible.
