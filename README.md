@@ -16,6 +16,10 @@
   Maintained by <a href="https://github.com/AjmalShajahan">Ajmal Shajahan</a> · Forked from <a href="https://github.com/tthn0/Spotify-Readme">tthn0/Spotify-Readme</a> · Inspired by <a href="https://github.com/novatorem/novatorem">novatorem</a>
 </p>
 
+<p align="center">
+  This repository is a modified fork maintained by Ajmal Shajahan since 2021. It includes contributions from the upstream project and other contributors and remains licensed under the <a href="LICENSE">GNU General Public License v3.0</a>.
+</p>
+
 ## Previews
 
 #### Default
