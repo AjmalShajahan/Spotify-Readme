@@ -79,10 +79,10 @@ def test_widget_route_passes_supported_options_and_sets_cache_headers(
     )
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert captured == {
-        "spin": "true",
-        "scan": "true",
+        "spin": True,
+        "scan": True,
         "theme": "catppuccin-mocha",
-        "rainbow": "true",
+        "rainbow": True,
     }
 
 
@@ -129,3 +129,71 @@ def test_rainbow_bars_use_spectrum_colors():
     assert bars.count("<div class='bar'></div>") == 2
     assert "#ff0000" in bars
     assert "#ff4000" in bars
+
+
+def test_access_token_is_reused_until_near_expiry(monkeypatch):
+    calls = []
+
+    class TokenResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"access_token": "token", "expires_in": 3600}
+
+    monkeypatch.setattr(index, "_access_token", None)
+    monkeypatch.setattr(index, "_access_token_expires_at", 0.0)
+    monkeypatch.setattr(index, "monotonic", lambda: 100.0)
+    monkeypatch.setattr(index, "getenv", lambda _name: "configured")
+    monkeypatch.setattr(
+        index.requests,
+        "post",
+        lambda *args, **kwargs: calls.append((args, kwargs)) or TokenResponse(),
+    )
+
+    assert index.get_token() == "token"
+    assert index.get_token() == "token"
+    assert len(calls) == 1
+
+
+def test_missing_credentials_raise_a_safe_spotify_error(monkeypatch):
+    monkeypatch.setattr(index, "_access_token", None)
+    monkeypatch.setattr(index, "_access_token_expires_at", 0.0)
+    monkeypatch.setattr(index, "getenv", lambda _name: None)
+
+    with pytest.raises(index.SpotifyAPIError, match="Missing required"):
+        index.get_token()
+
+
+def test_spotify_failure_renders_unavailable_placeholder(monkeypatch):
+    def unavailable():
+        raise index.SpotifyAPIError("unavailable")
+
+    monkeypatch.setattr(index, "get_playback_track", unavailable)
+
+    with index.app.test_request_context("/api"):
+        svg = index.make_svg(False, False, "dark", False)
+
+    assert "Unavailable" in svg
+    assert "#161B22" in svg
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [("true", True), ("1", True), ("false", False), ("0", False), (None, False)],
+)
+def test_parse_boolean(value, expected):
+    assert index.parse_boolean(value) is expected
+
+
+@pytest.mark.parametrize(
+    "theme,expected",
+    [
+        ("catppuccin", "catppuccin-mocha"),
+        ("catppuccin-latte", "catppuccin-latte"),
+        ("unknown", "light"),
+        (None, "light"),
+    ],
+)
+def test_normalize_theme(theme, expected):
+    assert index.normalize_theme(theme) == expected
