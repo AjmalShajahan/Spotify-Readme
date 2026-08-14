@@ -1,14 +1,16 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
     {
       "source": "/",
-      "destination": "https://github.com/AjmalShajahan/Spotify-Readme"
+      "destination": "https://github.com/AjmalShajahan/Spotify-Readme",
+      "permanent": true
     }
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "api/index.py"
+      "source": "/api/:path*",
+      "destination": "/api/index.py/:path*"
     }
   ]
 }

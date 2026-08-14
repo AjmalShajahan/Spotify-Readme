@@ -5,6 +5,8 @@ from flask import Flask, Response, render_template, request, redirect
 from os import getenv
 from random import randint
 
+REQUEST_TIMEOUT = (3.05, 10)
+
 # Load environment variables
 load_dotenv(find_dotenv())
 
@@ -19,6 +21,13 @@ with open("api/base64/spotify_logo.txt") as f:
 
 def get_token():
     """Get a new access token"""
+    required_variables = ("REFRESH_TOKEN", "CLIENT_ID", "CLIENT_SECRET")
+    missing_variables = [name for name in required_variables if not getenv(name)]
+    if missing_variables:
+        raise RuntimeError(
+            f"Missing required environment variables: {', '.join(missing_variables)}"
+        )
+
     r = requests.post(
         "https://accounts.spotify.com/api/token",
         data={
@@ -27,11 +36,13 @@ def get_token():
             "client_id": getenv("CLIENT_ID"),
             "client_secret": getenv("CLIENT_SECRET"),
         },
+        timeout=REQUEST_TIMEOUT,
     )
+    r.raise_for_status()
     try:
         return r.json()["access_token"]
-    except BaseException:
-        raise Exception(r.json())
+    except (KeyError, requests.exceptions.JSONDecodeError) as error:
+        raise RuntimeError("Spotify token response did not contain an access token") from error
 
 
 def parse_json_response(response):
@@ -49,6 +60,7 @@ def spotify_request(endpoint):
     r = requests.get(
         f"https://api.spotify.com/v1/{endpoint}",
         headers={"Authorization": f"Bearer {get_token()}"},
+        timeout=REQUEST_TIMEOUT,
     )
     if not r.ok:
         raise Exception(f"Spotify API request failed ({r.status_code}): {r.text}")
@@ -107,8 +119,9 @@ def generate_bars(bar_count, rainbow):
 
 def load_image_base64(url):
     """Get the Base64 encoded image from url"""
-    resposne = requests.get(url)
-    return b64encode(resposne.content).decode("ascii")
+    response = requests.get(url, timeout=REQUEST_TIMEOUT)
+    response.raise_for_status()
+    return b64encode(response.content).decode("ascii")
 
 
 def get_scan_code(spotify_uri):
@@ -137,10 +150,12 @@ def make_svg(spin, scan, theme, rainbow):
             },
         )
 
-    if item["album"]["images"] == []:
+    album_images = item["album"]["images"]
+    if not album_images:
         image = B64_PLACEHOLDER_IMAGE
     else:
-        image = load_image_base64(item["album"]["images"][1]["url"])
+        image_index = 1 if len(album_images) > 1 else 0
+        image = load_image_base64(album_images[image_index]["url"])
 
     if scan and scan != "false" and scan != "0":
         bar_count = 10
@@ -179,15 +194,23 @@ def catch_all(path):
         ),
         mimetype="image/svg+xml",
     )
-    resp.headers["Cache-Control"] = "s-maxage=1"
+    resp.headers["Cache-Control"] = (
+        "public, max-age=0, s-maxage=5, stale-while-revalidate=25"
+    )
+    resp.headers["X-Content-Type-Options"] = "nosniff"
     return resp
 
+
+@app.route("/play")
 @app.route("/api/play")
 def play():
     item = get_playback_track()
     if not item:
-        return redirect("https://open.spotify.com/")
-    return redirect(f"https://open.spotify.com/track/{item['id']}")
+        response = redirect("https://open.spotify.com/")
+    else:
+        response = redirect(f"https://open.spotify.com/track/{item['id']}")
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
