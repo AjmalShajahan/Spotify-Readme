@@ -366,6 +366,58 @@
         font-size: 0.85rem;
       }
 
+      .usage {
+        margin-top: 1.5rem;
+        padding: clamp(1.25rem, 4vw, 2.25rem);
+        border: 1px solid #313244;
+        border-radius: 1.5rem;
+        background: rgb(24 24 37 / 62%);
+      }
+
+      .option-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin: 1.5rem 0;
+      }
+
+      .option {
+        padding: 1rem;
+        border: 1px solid #313244;
+        border-radius: 0.8rem;
+        background: #1e1e2e;
+      }
+
+      .option dt {
+        margin-bottom: 0.45rem;
+        color: #a6e3a1;
+        font: 700 0.9rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      .option dd {
+        margin: 0;
+        color: #a6adc8;
+        font-size: 0.9rem;
+        line-height: 1.55;
+      }
+
+      .usage code {
+        color: #cdd6f4;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      .usage-note {
+        margin: 0;
+        color: #9399b2;
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+
+      .usage-note a {
+        color: #89b4fa;
+        font-weight: 700;
+      }
+
       footer {
         margin-top: 3rem;
         color: #7f849c;
@@ -417,6 +469,10 @@
           align-items: start;
           flex-direction: column;
           gap: 0.2rem;
+        }
+
+        .option-list {
+          grid-template-columns: 1fr;
         }
       }
 
@@ -524,6 +580,53 @@
             <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
           </div>
         </div>
+      </section>
+
+      <section class="usage" aria-labelledby="usage-title">
+        <h2 id="usage-title">Usage &amp; Options</h2>
+        <p class="muted">
+          The builder includes every supported option. You can also edit these
+          query parameters directly in the generated URL.
+        </p>
+
+        <dl class="option-list">
+          <div class="option">
+            <dt>theme</dt>
+            <dd>
+              Default: <code>light</code>. Choose <code>light</code>,
+              <code>dark</code>, or any of the four Catppuccin flavors shown
+              in the builder.
+            </dd>
+          </div>
+          <div class="option">
+            <dt>spin</dt>
+            <dd>
+              Default: <code>false</code>. Set to <code>true</code> to spin the
+              album art.
+            </dd>
+          </div>
+          <div class="option">
+            <dt>scan</dt>
+            <dd>
+              Default: <code>false</code>. Set to <code>true</code> to show a
+              Spotify Code.
+            </dd>
+          </div>
+          <div class="option">
+            <dt>rainbow</dt>
+            <dd>
+              Default: <code>false</code>. Set to <code>true</code> for rainbow
+              equalizer bars.
+            </dd>
+          </div>
+        </dl>
+
+        <p class="usage-note">
+          <code>theme=catppuccin</code> is shorthand for
+          <code>theme=catppuccin-mocha</code>. See the
+          <a href="https://github.com/AjmalShajahan/Spotify-Readme#setupdeployment"
+          >complete setup and deployment guide</a>.
+        </p>
       </section>
 
       <footer>
