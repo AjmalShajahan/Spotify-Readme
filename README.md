@@ -136,8 +136,10 @@ https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&
 | :-------- | :------ | :-------------- |
 | `spin`    | `false` | `false`, `true` |
 | `scan`    | `false` | `false`, `true` |
-| `theme`   | `light` | `light`, `dark` |
+| `theme`   | `light` | `light`, `dark`, `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha` |
 | `rainbow` | `false` | `false`, `true` |
+
+`theme=catppuccin` is available as a shorthand for `theme=catppuccin-mocha`.
 
 ## Keep Your Fork Up To Date
 

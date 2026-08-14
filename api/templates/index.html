@@ -19,7 +19,9 @@
                     display: flex;
                     padding: 20px;
                     border-radius: 5px;
-                    {% if theme == 'dark' %}
+                    {% if palette %}
+                        background: {{ palette.background }};
+                    {% elif theme == 'dark' %}
                         background: #161B22;
                     {% else %}
                         background: #F6F8FA;
@@ -31,7 +33,7 @@
                     width: 120px;
                     height: 100%;
                     border-radius: 5px;
-                    {% if theme == 'dark' %}
+                    {% if theme == 'dark' or (palette and palette.dark) %}
                         filter: invert(100%);
                     {% endif %}
                 }
@@ -52,7 +54,9 @@
                     {% else %}
                     border-radius: 10px;
                     {% endif %}
-                    {% if theme == 'dark' %}
+                    {% if palette %}
+                        box-shadow: 0 0 10px 5px {{ palette.shadow }};
+                    {% elif theme == 'dark' %}
                         box-shadow: 0 0 10px 5px #1b2027;
                     {% else %}
                         box-shadow: 0 0 10px 5px #f1f3f5;
@@ -88,7 +92,9 @@
                     {% if not scan_code %}
                         margin-left: 10px;
                     {% endif %}
-                    {% if theme == 'dark' %}
+                    {% if palette %}
+                        color: {{ palette.text }};
+                    {% elif theme == 'dark' %}
                         color: aliceblue;
                     {% else %}
                         color: #161B22;;
@@ -103,7 +109,9 @@
                     display: block;
                     overflow: hidden;
                     max-width: 260px;
-                    {% if theme == 'dark' %}
+                    {% if palette %}
+                        color: {{ palette.subtext }};
+                    {% elif theme == 'dark' %}
                         color: rgba(240, 248, 255, calc(2/3));
                     {% else %}
                         color: rgba(22, 27, 34, calc(2/3));
