@@ -303,6 +303,21 @@ def health():
     return response
 
 
+@app.get("/api/ready")
+def ready():
+    """Report whether the widget can currently reach Spotify."""
+    try:
+        get_playback()
+    except SpotifyAPIError:
+        response = jsonify(status="unavailable", spotify="unavailable")
+        response.status_code = 503
+    else:
+        response = jsonify(status="ready", spotify="ok")
+
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def catch_all(path):

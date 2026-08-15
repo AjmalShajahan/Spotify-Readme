@@ -116,12 +116,24 @@ https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&
         * Find the **Domains** field and take note of the URL.
           * Example: `{PROJECT_NAME}.vercel.app`.
 
-##### Optional health monitoring
+##### Optional deployment monitoring
 
 Use `https://{PROJECT_NAME}.vercel.app/api/health` for a lightweight deployment
 check. A healthy serverless function responds with `{"status":"ok"}` without
-contacting Spotify. This endpoint does not validate Spotify credentials or
-Spotify service availability.
+contacting Spotify.
+
+Use `https://{PROJECT_NAME}.vercel.app/api/ready` to check the complete Spotify
+integration. It exercises the same playback path as the widget, responds with
+HTTP 200 when Spotify is available, and responds with HTTP 503 when credentials,
+rate limits, Spotify availability, or an API change prevents playback lookup.
+The response never includes credentials or raw Spotify error details. Because
+this check contacts Spotify, poll it sparingly.
+
+Spotify refresh tokens issued to Developer Dashboard apps expire after six
+months, and refreshing an access token does not extend that lifetime. Reauthorize
+the app and replace `REFRESH_TOKEN` when the readiness check begins returning
+HTTP 503. See Spotify's
+<a href="https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens">refresh-token documentation</a>.
 
 #### 4. Add to your GitHub 🚀
 

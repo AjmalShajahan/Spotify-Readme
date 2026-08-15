@@ -122,6 +122,39 @@ def test_health_endpoint_does_not_contact_spotify(client, monkeypatch):
 
 
 @pytest.mark.parametrize(
+    "spotify_available,expected_status,expected_json",
+    [
+        (True, 200, {"status": "ready", "spotify": "ok"}),
+        (
+            False,
+            503,
+            {"status": "unavailable", "spotify": "unavailable"},
+        ),
+    ],
+)
+def test_readiness_endpoint_reports_spotify_availability(
+    client, monkeypatch, spotify_available, expected_status, expected_json
+):
+    if spotify_available:
+        monkeypatch.setattr(
+            index, "get_playback", lambda: (None, "Not Playing")
+        )
+    else:
+
+        def unavailable():
+            raise index.SpotifyAPIError("sensitive upstream detail")
+
+        monkeypatch.setattr(index, "get_playback", unavailable)
+
+    response = client.get("/api/ready")
+
+    assert response.status_code == expected_status
+    assert response.json == expected_json
+    assert "sensitive" not in response.get_data(as_text=True)
+    assert response.headers["Cache-Control"] == "no-store"
+
+
+@pytest.mark.parametrize(
     "track,expected_location",
     [
         ({"id": "track-id"}, "https://open.spotify.com/track/track-id"),
