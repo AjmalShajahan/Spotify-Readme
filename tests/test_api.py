@@ -44,6 +44,22 @@ def test_playback_handles_empty_history(monkeypatch):
     assert index.get_playback() == (None, "Not Playing")
 
 
+@pytest.mark.parametrize(
+    "artists,expected",
+    [
+        ([{"name": "Artist One"}], "Artist One"),
+        (
+            [{"name": "Artist One"}, {"name": "Artist Two"}],
+            "Artist One, Artist Two",
+        ),
+        ([], "Unknown Artist"),
+        ([{}], "Unknown Artist"),
+    ],
+)
+def test_format_artists_includes_every_credit(artists, expected):
+    assert index.format_artists({"artists": artists}) == expected
+
+
 @pytest.mark.parametrize("status_code,content", [(204, b""), (200, b"")])
 def test_parse_json_response_handles_empty_bodies(status_code, content):
     response = SimpleNamespace(status_code=status_code, content=content)
@@ -212,6 +228,22 @@ def test_widget_renders_playback_status(status, monkeypatch):
         svg = index.make_svg(False, False, "light", False)
 
     assert f'<span class="status">{status}</span>' in svg
+
+
+def test_widget_renders_all_credited_artists(monkeypatch):
+    track = {
+        "album": {"images": []},
+        "artists": [{"name": "Artist One"}, {"name": "Artist Two"}],
+        "id": "track-id",
+        "name": "Song",
+        "uri": "spotify:track:track-id",
+    }
+    monkeypatch.setattr(index, "get_playback", lambda: (track, "Now Playing"))
+
+    with index.app.test_request_context("/api"):
+        svg = index.make_svg(False, False, "light", False)
+
+    assert "Artist One, Artist Two" in svg
 
 
 @pytest.mark.parametrize(

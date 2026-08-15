@@ -8,17 +8,38 @@
       content="Configure a live Spotify now-playing widget for your GitHub README."
     />
     <meta name="theme-color" content="#11111b" />
+    <link rel="canonical" href="https://ajmal-spotify-readme.vercel.app/" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Spotify README" />
+    <meta property="og:url" content="https://ajmal-spotify-readme.vercel.app/" />
     <meta property="og:title" content="Spotify README" />
     <meta
       property="og:description"
       content="Configure a live Spotify now-playing widget for your GitHub README."
     />
-    <meta name="twitter:card" content="summary" />
+    <meta
+      property="og:image"
+      content="https://ajmal-spotify-readme.vercel.app/og-preview.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Spotify README live now-playing card builder"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Spotify README" />
     <meta
       name="twitter:description"
       content="Configure a live Spotify now-playing widget for your GitHub README."
+    />
+    <meta
+      name="twitter:image"
+      content="https://ajmal-spotify-readme.vercel.app/og-preview.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Spotify README live now-playing card builder"
     />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>Spotify README</title>
@@ -279,6 +300,50 @@
         display: grid;
         align-content: start;
         gap: 1.5rem;
+      }
+
+      .presets {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem;
+      }
+
+      .preset-button {
+        display: grid;
+        min-height: 4rem;
+        align-content: center;
+        gap: 0.15rem;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid #313244;
+        border-radius: 0.65rem;
+        background: #1e1e2e;
+        color: #cdd6f4;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .preset-button:hover {
+        border-color: #585b70;
+      }
+
+      .preset-button[aria-pressed="true"] {
+        border-color: #a6e3a1;
+        background: rgb(166 227 161 / 10%);
+        box-shadow: inset 0 0 0 1px rgb(166 227 161 / 24%);
+      }
+
+      .preset-name {
+        font-size: 0.88rem;
+        font-weight: 750;
+      }
+
+      .preset-detail {
+        color: #9399b2;
+        font: 0.72rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      .preset-button[aria-pressed="true"] .preset-detail {
+        color: #a6e3a1;
       }
 
       .field-label,
@@ -560,6 +625,56 @@
 
         <div class="builder-grid">
           <form class="controls" id="controls">
+            <fieldset>
+              <legend>Quick presets</legend>
+              <div class="presets">
+                <button
+                  class="preset-button"
+                  type="button"
+                  data-preset="clean"
+                  data-theme="light"
+                  data-effects=""
+                  aria-pressed="false"
+                >
+                  <span class="preset-name">Clean</span>
+                  <span class="preset-detail">Light · Still</span>
+                </button>
+                <button
+                  class="preset-button"
+                  type="button"
+                  data-preset="midnight"
+                  data-theme="dark"
+                  data-effects=""
+                  aria-pressed="false"
+                >
+                  <span class="preset-name">Midnight</span>
+                  <span class="preset-detail">Dark · Still</span>
+                </button>
+                <button
+                  class="preset-button"
+                  type="button"
+                  data-preset="catppuccin"
+                  data-theme="catppuccin-mocha"
+                  data-effects=""
+                  aria-pressed="true"
+                >
+                  <span class="preset-name">Catppuccin</span>
+                  <span class="preset-detail">Mocha · Still</span>
+                </button>
+                <button
+                  class="preset-button"
+                  type="button"
+                  data-preset="spectrum"
+                  data-theme="dark"
+                  data-effects="spin,rainbow"
+                  aria-pressed="false"
+                >
+                  <span class="preset-name">Spectrum</span>
+                  <span class="preset-detail">Dark · Motion</span>
+                </button>
+              </div>
+            </fieldset>
+
             <div>
               <label class="field-label" for="theme">Theme</label>
               <select id="theme" name="theme" autocomplete="off">
@@ -667,6 +782,8 @@
       const copyButton = document.querySelector("#copy");
       const copyStatus = document.querySelector("#copy-status");
       const resetButton = document.querySelector("#reset");
+      const presetButtons = [...document.querySelectorAll("[data-preset]")];
+      const effects = ["spin", "scan", "rainbow"];
       const allowedThemes = new Set([
         "light",
         "dark",
@@ -680,11 +797,26 @@
         const data = new FormData(controls);
         const parameters = new URLSearchParams({ theme: data.get("theme") });
 
-        for (const effect of ["spin", "scan", "rainbow"]) {
+        for (const effect of effects) {
           if (data.has(effect)) parameters.set(effect, "true");
         }
 
         return parameters;
+      }
+
+      function updatePresetState(parameters) {
+        for (const button of presetButtons) {
+          const presetEffects = new Set(
+            button.dataset.effects.split(",").filter(Boolean),
+          );
+          const matches =
+            parameters.get("theme") === button.dataset.theme &&
+            effects.every((effect) =>
+              parameters.has(effect) === presetEffects.has(effect),
+            );
+
+          button.setAttribute("aria-pressed", String(matches));
+        }
       }
 
       function renderConfiguration({ updateHistory = true } = {}) {
@@ -695,6 +827,7 @@
         previewMessage.hidden = true;
         preview.src = `/api?${parameters}`;
         markdown.textContent = `[![Spotify](${endpoint})](${playUrl})`;
+        updatePresetState(parameters);
 
         if (updateHistory) {
           window.history.replaceState(null, "", `?${parameters}`);
@@ -709,11 +842,27 @@
           theme.value = requestedTheme;
         }
 
-        for (const effect of ["spin", "scan", "rainbow"]) {
+        for (const effect of effects) {
           controls.elements[effect].checked = parameters.get(effect) === "true";
         }
 
         renderConfiguration({ updateHistory: false });
+      }
+
+      for (const button of presetButtons) {
+        button.addEventListener("click", () => {
+          const presetEffects = new Set(
+            button.dataset.effects.split(",").filter(Boolean),
+          );
+
+          theme.value = button.dataset.theme;
+          for (const effect of effects) {
+            controls.elements[effect].checked = presetEffects.has(effect);
+          }
+
+          copyStatus.textContent = "";
+          renderConfiguration();
+        });
       }
 
       controls.addEventListener("change", () => {
