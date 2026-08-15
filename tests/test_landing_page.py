@@ -52,3 +52,15 @@ def test_share_preview_is_a_1200_by_630_png():
 
     assert data[:8] == b"\x89PNG\r\n\x1a\n"
     assert unpack(">II", data[16:24]) == (1200, 630)
+
+
+def test_embed_builder_explains_deployment_ownership_and_reset_behavior():
+    page = LANDING_PAGE.read_text()
+
+    ownership_note = page.index('class="ownership-note"')
+    embed_output = page.index('class="output"')
+    usage_options = page.index('class="usage"')
+
+    assert embed_output < ownership_note < usage_options
+    assert "shows the deployment owner’s Spotify activity" in page
+    assert "Reset API Defaults" in page
