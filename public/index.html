@@ -398,7 +398,10 @@
       }
 
       .output {
+        display: grid;
         min-width: 0;
+        align-content: start;
+        gap: 0.75rem;
       }
 
       .snippet {
@@ -442,9 +445,28 @@
 
       .copy-status {
         min-height: 1.4em;
-        margin: 0.65rem 0 0;
+        margin: 0;
         color: #a6e3a1;
         font-size: 0.85rem;
+      }
+
+      .ownership-note {
+        padding: 0.8rem 0.9rem;
+        border-left: 3px solid #a6e3a1;
+        border-radius: 0 0.65rem 0.65rem 0;
+        background: rgb(166 227 161 / 8%);
+        color: #bac2de;
+        font-size: 0.84rem;
+        line-height: 1.55;
+      }
+
+      .ownership-note strong {
+        color: #cdd6f4;
+      }
+
+      .ownership-note a {
+        color: #a6e3a1;
+        font-weight: 700;
       }
 
       .usage {
@@ -620,7 +642,7 @@
             <h2 id="configurator-title">Build Your Embed</h2>
             <p class="muted">Choose a look, preview it live, then copy the Markdown.</p>
           </div>
-          <button class="reset-button" id="reset" type="button">Reset Defaults</button>
+          <button class="reset-button" id="reset" type="button">Reset API Defaults</button>
         </div>
 
         <div class="builder-grid">
@@ -709,6 +731,12 @@
               <pre><code id="markdown" translate="no"></code></pre>
               <button class="copy-button" id="copy" type="button">Copy Markdown</button>
             </div>
+            <aside class="ownership-note" aria-label="Deployment ownership">
+              <strong>This widget shows the deployment owner’s Spotify activity.</strong>
+              To display yours,
+              <a href="https://github.com/AjmalShajahan/Spotify-Readme#setupdeployment"
+              >deploy your own instance</a>.
+            </aside>
             <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
           </div>
         </div>

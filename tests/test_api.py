@@ -199,6 +199,17 @@ def test_rainbow_bars_use_spectrum_colors():
     assert "#ff4000" in bars
 
 
+def test_widget_honors_reduced_motion(monkeypatch):
+    monkeypatch.setattr(index, "get_playback", lambda: (None, "Not Playing"))
+
+    with index.app.test_request_context("/api"):
+        svg = index.make_svg(True, False, "dark", True)
+
+    assert "@media (prefers-reduced-motion: reduce)" in svg
+    assert "animation: none !important" in svg
+    assert "transform: scaleY(.65)" in svg
+
+
 def test_access_token_is_reused_until_near_expiry(monkeypatch):
     calls = []
 
