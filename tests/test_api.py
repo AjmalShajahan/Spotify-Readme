@@ -11,17 +11,22 @@ def client():
     return index.app.test_client()
 
 
-def test_playback_prefers_current_track(monkeypatch):
+@pytest.mark.parametrize(
+    "is_playing,expected_status", [(True, "Now Playing"), (False, "Paused")]
+)
+def test_playback_reports_current_track_state(
+    monkeypatch, is_playing, expected_status
+):
     current = {"id": "current"}
     requests = []
 
     def fake_spotify_request(endpoint):
         requests.append(endpoint)
-        return {"item": current}
+        return {"item": current, "is_playing": is_playing}
 
     monkeypatch.setattr(index, "spotify_request", fake_spotify_request)
 
-    assert index.get_playback_track() == current
+    assert index.get_playback() == (current, expected_status)
     assert requests == ["me/player/currently-playing"]
 
 
@@ -30,13 +35,13 @@ def test_playback_falls_back_to_most_recent_track(monkeypatch):
     responses = iter(({}, {"items": [{"track": recent}]}))
     monkeypatch.setattr(index, "spotify_request", lambda _endpoint: next(responses))
 
-    assert index.get_playback_track() == recent
+    assert index.get_playback() == (recent, "Recently Played")
 
 
 def test_playback_handles_empty_history(monkeypatch):
     monkeypatch.setattr(index, "spotify_request", lambda _endpoint: {})
 
-    assert index.get_playback_track() is None
+    assert index.get_playback() == (None, "Not Playing")
 
 
 @pytest.mark.parametrize("status_code,content", [(204, b""), (200, b"")])
@@ -114,7 +119,7 @@ def test_play_redirects_to_spotify(client, monkeypatch, track, expected_location
     ],
 )
 def test_catppuccin_themes_render(theme, background, monkeypatch):
-    monkeypatch.setattr(index, "get_playback_track", lambda: None)
+    monkeypatch.setattr(index, "get_playback", lambda: (None, "Not Playing"))
 
     with index.app.test_request_context("/api"):
         svg = index.make_svg(None, None, theme, None)
@@ -169,13 +174,30 @@ def test_spotify_failure_renders_unavailable_placeholder(monkeypatch):
     def unavailable():
         raise index.SpotifyAPIError("unavailable")
 
-    monkeypatch.setattr(index, "get_playback_track", unavailable)
+    monkeypatch.setattr(index, "get_playback", unavailable)
 
     with index.app.test_request_context("/api"):
         svg = index.make_svg(False, False, "dark", False)
 
     assert "Unavailable" in svg
     assert "#161B22" in svg
+
+
+@pytest.mark.parametrize("status", ["Now Playing", "Paused", "Recently Played"])
+def test_widget_renders_playback_status(status, monkeypatch):
+    track = {
+        "album": {"images": []},
+        "artists": [{"name": "Artist"}],
+        "id": "track-id",
+        "name": "Song",
+        "uri": "spotify:track:track-id",
+    }
+    monkeypatch.setattr(index, "get_playback", lambda: (track, status))
+
+    with index.app.test_request_context("/api"):
+        svg = index.make_svg(False, False, "light", False)
+
+    assert f'<span class="status">{status}</span>' in svg
 
 
 @pytest.mark.parametrize(
