@@ -164,6 +164,13 @@ def get_playback_track():
     return track
 
 
+def format_artists(item):
+    """Return every credited artist as a readable, comma-separated string."""
+    artists = item.get("artists", [])
+    names = [artist.get("name") for artist in artists if artist.get("name")]
+    return ", ".join(names) if names else "Unknown Artist"
+
+
 def generate_bars(bar_count, rainbow, color="#24D255"):
     """Build the HTML/CSS snippets for the EQ bars to be injected"""
     bars = "".join(["<div class='bar'></div>" for _ in range(bar_count)])
@@ -272,7 +279,7 @@ def make_svg(spin, scan, theme, rainbow):
         "index.html",
         **{
             "bars": generate_bars(bar_count, rainbow, bar_color),
-            "artist": item["artists"][0]["name"],
+            "artist": format_artists(item),
             "song": item["name"],
             "playback_status": playback_status,
             "image": image,
