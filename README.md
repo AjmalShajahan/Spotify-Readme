@@ -116,6 +116,13 @@ https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&
         * Find the **Domains** field and take note of the URL.
           * Example: `{PROJECT_NAME}.vercel.app`.
 
+##### Optional health monitoring
+
+Use `https://{PROJECT_NAME}.vercel.app/api/health` for a lightweight deployment
+check. A healthy serverless function responds with `{"status":"ok"}` without
+contacting Spotify. This endpoint does not validate Spotify credentials or
+Spotify service availability.
+
 #### 4. Add to your GitHub 🚀
 
 * In any markdown file, add the following (replace `{PROJECT_NAME}` with the name you gave your Vercel project):

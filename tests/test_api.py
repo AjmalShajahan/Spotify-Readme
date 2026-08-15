@@ -91,6 +91,20 @@ def test_widget_route_passes_supported_options_and_sets_cache_headers(
     }
 
 
+def test_health_endpoint_does_not_contact_spotify(client, monkeypatch):
+    def unexpected_spotify_call():
+        raise AssertionError("health endpoint contacted Spotify")
+
+    monkeypatch.setattr(index, "get_playback", unexpected_spotify_call)
+
+    response = client.get("/api/health")
+
+    assert response.status_code == 200
+    assert response.json == {"status": "ok"}
+    assert response.mimetype == "application/json"
+    assert response.headers["Cache-Control"] == "no-store"
+
+
 @pytest.mark.parametrize(
     "track,expected_location",
     [
