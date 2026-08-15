@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  The widget distinguishes currently playing, paused, and recently played tracks, falling back to your latest track when nothing is active.
+  The widget lists all credited artists and distinguishes currently playing, paused, and recently played tracks, falling back to your latest track when nothing is active.
 </p>
 
 <p align="center">
