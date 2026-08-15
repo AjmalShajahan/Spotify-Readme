@@ -1,7 +1,7 @@
 import requests
 from base64 import b64encode
 from dotenv import find_dotenv, load_dotenv
-from flask import Flask, Response, render_template, request, redirect
+from flask import Flask, Response, jsonify, redirect, render_template, request
 from os import getenv
 from random import randint
 from time import monotonic
@@ -293,6 +293,14 @@ def make_svg(spin, scan, theme, rainbow):
 
 
 app = Flask(__name__)
+
+
+@app.get("/api/health")
+def health():
+    """Report that the serverless function is available without calling Spotify."""
+    response = jsonify(status="ok")
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @app.route("/", defaults={"path": ""})
