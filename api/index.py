@@ -144,17 +144,24 @@ def spotify_request(endpoint):
     return parse_json_response(response)
 
 
-def get_playback_track():
-    """Get the current track, falling back to the most recently played track."""
+def get_playback():
+    """Return a track and an accurate description of its playback state."""
     data = spotify_request("me/player/currently-playing")
     if data and data.get("item"):
-        return data["item"]
+        status = "Now Playing" if data.get("is_playing") else "Paused"
+        return data["item"], status
 
     recent = spotify_request("me/player/recently-played?limit=1")
     items = recent.get("items", [])
     if not items:
-        return None
-    return items[0].get("track")
+        return None, "Not Playing"
+    return items[0].get("track"), "Recently Played"
+
+
+def get_playback_track():
+    """Return only the current or most recently played track."""
+    track, _status = get_playback()
+    return track
 
 
 def generate_bars(bar_count, rainbow, color="#24D255"):
@@ -212,12 +219,10 @@ def make_svg(spin, scan, theme, rainbow):
     """Render the HTML template with variables"""
     theme = normalize_theme(theme)
     try:
-        item = get_playback_track()
+        item, playback_status = get_playback()
     except SpotifyAPIError:
         item = None
-        unavailable = True
-    else:
-        unavailable = False
+        playback_status = "Unavailable"
 
     palette = CATPPUCCIN_THEMES.get(theme)
     bar_color = palette["bar"] if palette else "#24D255"
@@ -228,7 +233,12 @@ def make_svg(spin, scan, theme, rainbow):
             **{
                 "bars": generate_bars(12, rainbow, bar_color),
                 "artist": "Spotify",
-                "song": "Unavailable" if unavailable else "Not Playing",
+                "song": (
+                    "Unavailable"
+                    if playback_status == "Unavailable"
+                    else "Not Playing"
+                ),
+                "playback_status": playback_status,
                 "image": B64_PLACEHOLDER_IMAGE,
                 "scan_code": None,
                 "theme": theme,
@@ -264,6 +274,7 @@ def make_svg(spin, scan, theme, rainbow):
             "bars": generate_bars(bar_count, rainbow, bar_color),
             "artist": item["artists"][0]["name"],
             "song": item["name"],
+            "playback_status": playback_status,
             "image": image,
             "scan_code": scan_code if scan_code != "" else B64_PLACEHOLDER_SCAN_CODE,
             "theme": theme,

@@ -13,6 +13,10 @@
 </p>
 
 <p align="center">
+  The widget distinguishes currently playing, paused, and recently played tracks, falling back to your latest track when nothing is active.
+</p>
+
+<p align="center">
   Maintained by <a href="https://github.com/AjmalShajahan">Ajmal Shajahan</a> · Forked from <a href="https://github.com/tthn0/Spotify-Readme">tthn0/Spotify-Readme</a> · Inspired by <a href="https://github.com/novatorem/novatorem">novatorem</a>
 </p>
 
