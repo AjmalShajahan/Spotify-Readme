@@ -5,8 +5,10 @@
     ":separateMultipleMajorReleases",
     ":approveMajorUpdates"
   ],
-  "dependencyDashboardLabels": ["dependencies"],
-  "dependencyDashboardOSVVulnerabilitySummary": "all",
+  "dependencyDashboard": {
+    "labels": ["dependencies"],
+    "osvVulnerabilitySummary": "all"
+  },
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": ["security"]
